@@ -280,8 +280,14 @@ div {
   overflow-x: auto;
 }
 
-.theTotals {
-  padding-top: 10px;
+.theTotals{
+  margin: 20px 0 0 .7%;
+  width: 100%;
+}
+
+.theTotals td {
+  height: 30px;
+  width: 40%;
 }
 
 .theList {
