@@ -19,7 +19,6 @@ const price = ref<string>('')
 
 const selectedStore = ref('all')
 
-const viewMode = ref(false)
 
 
 function addItem() {
@@ -39,11 +38,6 @@ function addItem() {
 
 function onStoreChange() {
   emit('store-change', selectedStore.value)
-}
-
-function theSwitch() {
-  viewMode.value = !viewMode.value
-  emit('view-change', viewMode.value)
 }
 
 </script>
@@ -86,9 +80,6 @@ function theSwitch() {
       </select>
     </div>
 
-    <div class="navigation_buttons">
-      <button class="squareButton" @click="theSwitch">Switch</button>
-    </div>
 
   </div>
 
