@@ -52,13 +52,6 @@ function theSwitch() {
   <div style="display: flex;">
     <div class="add-item">
       <input
-          type="number"
-          v-model="quantity"
-          min="1"
-          placeholder="Antall"
-      />
-
-      <input
           v-model="name"
           placeholder="Vare"
       />
@@ -70,6 +63,14 @@ function theSwitch() {
           step="0.01"
           placeholder="Pris"
       />
+
+      <input
+          type="number"
+          v-model="quantity"
+          min="1"
+          placeholder="Antall"
+      />
+
 
       <button @click="addItem">
         Legg til
@@ -114,7 +115,7 @@ select {
 }
 
 .navigation_buttons {
-  background-color: #236277;
+  margin-bottom: 0.5rem;
   width: 100%;
   display: flex;
   justify-content: flex-start;
