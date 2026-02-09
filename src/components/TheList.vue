@@ -1,204 +1,137 @@
 <script setup lang="ts">
-import { computed, ref , watch} from 'vue'
-
-
-interface Item {
-  id: number
-  name: string
-  quantity: number
-  price: number
-  checked: boolean
-  priority: boolean
-  editing: boolean
-  store: string | null
-}
-
+import type { ShoppingList} from "@/model/ShoppingList.ts";
 
 const props = defineProps<{
-  items: Item[]
-  activeStore: string
+  list: ShoppingList
   compactView: boolean
-  priorityTotal: number
-  grandTotal: number
   showAddItem: boolean
 }>()
 
-
-const emit = defineEmits(['delete', 'toggle-checked'])
-
-
-function itemTotal(item: Item) {
-  return item.quantity * item.price
-}
-
-function editItem(item: Item) {
-  item.editing = true
-}
-
-function saveItem(item: Item) {
-  item.editing = false
-}
+const emit = defineEmits(['delete', 'toggle-checked', 'set-priority'])
 
 
-const sortedItems = computed(() => {
-  let list = props.items
-
-  if (props.activeStore !== 'all') {
-    list = list.filter(i =>
-        !i.checked &&
-        (i.store === null || i.store === props.activeStore)
-    )
-  }
-
-  if (props.items.some(i => i.editing)) return list
-
-  return [...list].sort((a, b) => {
-    if (a.checked !== b.checked) return a.checked ? 1 : -1
-    return a.name.toLowerCase().localeCompare(b.name.toLowerCase(), 'no')
-  })
-})
-
-
-function searchItemDeal(item: Item) {
+function searchItemDeal(item: any) {
   const q = encodeURIComponent(item.name)
   window.open(`https://www.tilbudsuken.no/tilbud/${q}`, '_blank')
 }
-
 </script>
 
 <template>
 
+  <div :class="['theList', { expanded: !showAddItem }]">
 
-  <div class="theList">
-    <table>
-        <thead>
-        <tr>
-          <th class="col-ant">Ant</th>
-          <th class="col-vare">Vare</th>
+  <table>
+      <thead>
+      <tr>
+        <th class="col-ant">Ant</th>
+        <th class="col-vare">Vare</th>
 
-          <template v-if="!compactView">
-            <th class="col-small">Pris pr</th>
-            <th class="col-small">Tot</th>
-            <th class="col-mid">Pri</th>
-            <th class="col-mid">Varer som mangler</th>
-          </template>
+        <template v-if="!compactView">
+          <th class="col-small">Pris pr</th>
+          <th class="col-small">Tot</th>
+          <th class="col-mid">Prioritet</th>
+          <th class="col-mid">Trenger</th>
+        </template>
 
-          <template v-else>
-            <th class="col-small">Tilbud</th>
-            <th class="col-small">Rediger</th>
-            <th class="col-small">Butikk</th>
-            <th class="col-small">Slett</th>
-          </template>
-        </tr>
-        </thead>
+        <template v-else>
+          <th class="col-small">Pris pr</th>
+          <th class="col-small">Tilbud</th>
+          <th class="col-small">Rediger</th>
+          <th class="col-small">Butikk</th>
+          <th class="col-small">Slett</th>
+        </template>
+      </tr>
+      </thead>
 
-        <tbody>
-        <tr v-for="item in sortedItems" :key="item.id">
+      <tbody>
+      <tr v-for="item in list.sortedItems" :key="item.id">
 
-          <!-- Antall -->
+        <td>
+          <span v-if="!item.editing">{{ item.quantity }}</span>
+          <input v-else type="number" v-model.number="item.quantity" />
+        </td>
+
+        <td>
+          <span v-if="!item.editing">{{ item.name }}</span>
+          <input v-else v-model="item.name" />
+        </td>
+
+
           <td>
-            <span v-if="!item.editing">{{ item.quantity }}</span>
-            <input v-else type="number" v-model.number="item.quantity" />
+            <span v-if="!item.editing">{{ item.price }} kr</span>
+            <input v-else type="number" v-model.number="item.price" />
           </td>
 
-          <!-- Vare -->
-          <td>
-            <span v-if="!item.editing">{{ item.name }}</span>
-            <input v-else v-model="item.name" />
-          </td>
-
-          <!-- MODE A -->
           <template v-if="!compactView">
 
+          <td>{{ item.quantity * item.price }} kr</td>
 
-          <!-- Pris -->
-            <td>
-              <span v-if="!item.editing">{{ item.price }} kr</span>
-              <input v-else type="number" v-model.number="item.price" />
-            </td>
+          <td class="priCheck">
+            <input
+                type="checkbox"
+                :checked="item.priority"
+                @change="emit('set-priority', { id: item.id, value: !item.priority })"
+            />
 
-            <!-- Total -->
-            <td>{{ itemTotal(item) }} kr</td>
+          </td>
 
-            <!-- Prioritet -->
-            <td class="priCheck">
-              <input type="checkbox" v-model="item.priority" />
-            </td>
+          <td class="buyCheck">
+            <input
+                type="checkbox"
+                :checked="!item.checked"
+                @change="emit('toggle-checked', item.id)"
+            />
+          </td>
 
-            <!-- Kjøpt -->
-            <td class="buyCheck">
-              <input
-                  type="checkbox"
-                  :checked="item.checked"
-                  @change="emit('toggle-checked', item.id)"
-              />
-            </td>
+        </template>
 
-          </template>
+        <template v-else>
 
-          <!-- MODE B -->
-          <template v-else>
+          <td>
+            <button @click="searchItemDeal(item)">🔍</button>
+          </td>
 
-            <!-- Søk -->
-            <td>
-              <button @click="searchItemDeal(item)">🔍</button>
-            </td>
+          <td>
+            <button v-if="!item.editing" @click="item.editing = true">R</button>
+            <button v-else @click="item.editing = false">Lagre</button>
+          </td>
 
-            <!-- Rediger -->
-            <td>
-              <button v-if="!item.editing" @click="editItem(item)">R</button>
-              <button v-else @click="saveItem(item)">Lagre</button>
-            </td>
-
-            <!-- Butikk -->
-            <td>
-              <select v-model="item.store" class="storeSelect">
+          <td>
+            <select v-model="item.store" class="storeSelect">
               <option :value="null">–</option>
-                <option value="rema">Rema</option>
-                <option value="kiwi">Kiwi</option>
-                <option value="meny">Meny</option>
-                <option value="extra">Extra</option>
-                <option value="coop">Coop Obs</option>
-              </select>
-            </td>
+              <option value="rema">Rema</option>
+              <option value="kiwi">Kiwi</option>
+              <option value="meny">Meny</option>
+              <option value="extra">Extra</option>
+              <option value="coop">Coop Obs</option>
+            </select>
+          </td>
 
-            <!-- Slett -->
-            <td>
-              <button @click="emit('delete', item.id)">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                <path d="M10 11v6" />
-                <path d="M14 11v6" />
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-              </svg></button>
-            </td>
+          <td>
+            <button @click="emit('delete', item.id)">X</button>
+          </td>
 
-          </template>
+        </template>
 
-        </tr>
-        </tbody>
-
-
-        <tfoot>
-
-        </tfoot>
-      </table>
-    </div>
+      </tr>
+      </tbody>
+    </table>
+  </div>
 
   <table class="theTotals">
     <tbody>
-    <tr >
+    <tr>
       <td class="prisum">Prioritert totalsum:</td>
-      <td class="prisum">{{ priorityTotal }} kr</td>
+      <td class="prisum">{{ list.priorityTotal }} kr</td>
     </tr>
 
     <tr>
       <td class="sum">Totalsum:</td>
-      <td class="sum">{{ grandTotal }} kr</td>
+      <td class="sum">{{ list.grandTotal }} kr</td>
     </tr>
     </tbody>
   </table>
+
 </template>
 
 <style scoped>
@@ -209,16 +142,18 @@ div {
   overflow-x: auto;
 }
 
-.toggleBar {
-  display: flex;
-  height: 50px
+/* Chrome, Edge, Safari */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.toggleAdd {
-  background-color: #236277;
-  margin: 6px;
-  width: 50%;
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
 }
+
 
 
 .priCheck input,
@@ -227,25 +162,52 @@ div {
   margin: 0 auto;
 }
 
+.storeSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  min-width: 0 !important;
+  width: 40px !important;
+}
+
 
 
 .theTotals{
-  position: sticky;
-  margin: 20px 0 0 .1%;
+  min-width: unset;
+  width: 98%;
+  margin: 20px 0 0 1%;
+  box-shadow: #0f1f23 1.5px 1.5px 1.5px;
 }
+
 
 .theTotals td {
   height: 30px;
   width: 50%;
+  font-size: 22px;
 }
 
 
 .theList {
   overflow-y: auto;
   height: 43vh;
-  border: solid 2px #236277;
+  border-left:  solid 1px #1c4b5a;
+  border-bottom: solid 1px #1c4b5a;
   border-radius: 2px;
 }
+
+.theList td input[type="number"] {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+.theList td input {
+  box-sizing: border-box;
+  max-width: 70%;
+}
+
+.theList table {
+  table-layout: fixed;
+  width: 100%;
+}
+
 
 .theList.expanded {
   height: 73vh;
@@ -310,13 +272,16 @@ th {
 
 /* Cells */
 td {
-  font-family: Arial;
-  font-size: 16px;
+  font-family: Arial, Helvetica, sans-serif;
   height: 34px;
   padding: 0.4rem;
   border: 1px solid #070707;
   word-wrap: break-word;
   vertical-align: middle;
+}
+
+.theList td {
+  font-size: 17px;
 }
 
 /* Zebra rows */
@@ -355,6 +320,7 @@ td button {
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 12px;
 }
 
 

@@ -43,7 +43,6 @@ function onStoreChange() {
 </script>
 
 <template>
-  <div style="display: flex;">
     <div class="add-item">
       <input
           v-model="name"
@@ -81,18 +80,24 @@ function onStoreChange() {
     </div>
 
 
-  </div>
-
 
 </template>
 
 <style scoped>
 .add-item {
   display: flex;
-  width: 40vh;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0.5rem;
+  margin: 0 0 15px 0;
+}
+
+.add-item button,
+.add-item input,
+.add-item select {
+  width: 95%;
 }
 
 input,
@@ -113,16 +118,11 @@ select {
   align-items: flex-end;
 }
 
-.squareButton {
-  width: 100%;
-  height: 25%;
+button:active {
+  background-color: #b5b5b5;
+  transform: scale(0.97);
 }
 
-.square {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  font-size: 1.2rem;
-}
+
 
 </style>
