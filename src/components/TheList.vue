@@ -187,6 +187,7 @@ function searchItemDeal(item: Item) {
     </div>
 
   <table class="theTotals">
+    <tbody>
     <tr >
       <td class="prisum">Prioritert totalsum:</td>
       <td class="prisum">{{ priorityTotal }} kr</td>
@@ -196,6 +197,7 @@ function searchItemDeal(item: Item) {
       <td class="sum">Totalsum:</td>
       <td class="sum">{{ grandTotal }} kr</td>
     </tr>
+    </tbody>
   </table>
 </template>
 

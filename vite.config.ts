@@ -12,11 +12,14 @@ export default defineConfig({
 
   plugins: [
     vue(),
+
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'generateSW',
 
+      // 🔥 Disable PWA in dev to remove glob warning
       devOptions: {
-        enabled: true
+        enabled: false
       },
 
       manifest: {
@@ -40,8 +43,6 @@ export default defineConfig({
           }
         ]
       }
-
-
     })
   ]
 })
